@@ -1,24 +1,26 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Header } from '../components/Header/Header';
 import { LingoGrid } from '../components/Grid/LingoGrid';
 import { Keyboard } from '../components/Keyboard/Keyboard';
-import { generateEmptyGrid, CellData, LetterStatus } from '../components/Grid/types';
-import { wsService, ClientGameRoom, GuessResult } from '../services/websocket';
+import { generateEmptyGrid } from '../components/Grid/types';
+import type { CellData, LetterStatus } from '../components/Grid/types';
+import { wsService } from '../services/websocket';
+import type { ClientGameRoom, GuessResult } from '../services/websocket';
 import styles from './GameScreen.module.css';
 
-const ROOM_ID = "TEST-ROOM";
+const ROOM_ID = "ROOM-" + Math.floor(Math.random() * 10000);
 const PLAYER_NAME = "DevUser";
 const MAX_ATTEMPTS = 5;
-const WORD_LENGTH = 5;
+const WORD_LENGTH = 4; // Backend hardcodes "WORD" which is 4 letters
 
 export const GameScreen = () => {
   const [grid, setGrid] = useState<CellData[][]>(generateEmptyGrid(MAX_ATTEMPTS, WORD_LENGTH));
   const [currentRow, setCurrentRow] = useState(0);
-  const [currentCol, setCurrentCol] = useState(1);
   const [gameState, setGameState] = useState<'CONNECTING' | 'PLAYING' | 'WON' | 'LOST'>('CONNECTING');
   const [timeLeft, setTimeLeft] = useState(10);
   const [letterStatuses, setLetterStatuses] = useState<{ [key: string]: LetterStatus }>({});
   const [roomData, setRoomData] = useState<ClientGameRoom | null>(null);
+  const handleGuessResultRef = useRef<typeof handleGuessResult | null>(null);
 
   useEffect(() => {
     wsService.connect(
@@ -28,16 +30,18 @@ export const GameScreen = () => {
         setTimeLeft(Math.ceil((state.timeRemainingMs || 10000) / 1000));
         
         // Setup initial revealed letters
-        if (state.revealedLetters && state.revealedLetters.length > 0) {
+        if (state.revealedLetters && state.revealedLetters.length > 0 && state.currentAttempt && state.currentAttempt > 0 && state.currentAttempt <= MAX_ATTEMPTS) {
            setGrid((prev) => {
              const newGrid = [...prev];
-             newGrid[state.currentAttempt! - 1][0] = { letter: state.revealedLetters![0], status: 'TYPED' };
+             newGrid[state.currentAttempt - 1][0] = { letter: state.revealedLetters![0], status: 'TYPED' };
              return newGrid;
            });
         }
       },
       (result) => {
-        handleGuessResult(result);
+        if (handleGuessResultRef.current) {
+          handleGuessResultRef.current(result);
+        }
       }
     );
 
@@ -71,20 +75,37 @@ export const GameScreen = () => {
       setGameState('LOST');
     } else {
       setCurrentRow((prev) => prev + 1);
-      setCurrentCol(1);
       
-      // Auto-fill first letter for next row if available
-      if (roomData?.revealedLetters && roomData.revealedLetters.length > 0) {
-          setTimeout(() => {
-            setGrid((prev) => {
-              const updated = [...prev];
-              updated[currentRow + 1][0] = { letter: roomData.revealedLetters![0], status: 'TYPED' };
-              return updated;
-            });
-          }, 500);
-      }
+      // Auto-fill correct letters for next row
+      setTimeout(() => {
+        setGrid((prev) => {
+          const updated = [...prev];
+          const nextRow = currentRow + 1;
+          
+          // Find all permanently known letters by scanning all previous rows
+          for (let i = 0; i < WORD_LENGTH; i++) {
+            for (let r = 0; r <= currentRow; r++) {
+               if (updated[r][i].status === 'CORRECT') {
+                 updated[nextRow][i] = { letter: updated[r][i].letter, status: 'CORRECT' };
+                 break;
+               }
+            }
+          }
+          
+          // Also ensure the first letter is always filled if revealed
+          if (roomData?.revealedLetters && roomData.revealedLetters.length > 0) {
+             if (updated[nextRow][0].status === 'EMPTY') {
+               updated[nextRow][0] = { letter: roomData.revealedLetters[0], status: 'TYPED' };
+             }
+          }
+          
+          return updated;
+        });
+      }, 500);
     }
   };
+
+  handleGuessResultRef.current = handleGuessResult;
 
   useEffect(() => {
     if (gameState !== 'PLAYING') return;
@@ -106,27 +127,38 @@ export const GameScreen = () => {
     if (gameState !== 'PLAYING') return;
 
     if (key === 'ENTER') {
-      if (currentCol < WORD_LENGTH) return;
-      const guess = grid[currentRow].map(c => c.letter).join('');
+      const currentRowCells = grid[currentRow];
+      const isComplete = currentRowCells && currentRowCells.every(c => c.letter !== '');
+      if (!isComplete) return;
+
+      const guess = currentRowCells.map(c => c.letter).join('');
       wsService.submitGuess(ROOM_ID, guess);
-    } else if (key === '⌫') {
-      if (currentCol > 1) {
-        setGrid((prev) => {
-          const newGrid = [...prev];
-          newGrid[currentRow][currentCol - 1] = { letter: '', status: 'EMPTY' };
-          return newGrid;
-        });
-        setCurrentCol((prev) => prev - 1);
-      }
-    } else if (key.match(/^[A-Z]$/) && currentCol < WORD_LENGTH) {
+    } else if (key === '⌫' || key === 'BACKSPACE') {
       setGrid((prev) => {
-        const newGrid = [...prev];
-        newGrid[currentRow][currentCol] = { letter: key, status: 'TYPED' };
+        const newGrid = prev.map(row => [...row]);
+        const rowCells = newGrid[currentRow];
+        // Backspace removes the last user-typed letter ('TYPED'), preserving pre-filled 'CORRECT' letters
+        for (let i = rowCells.length - 1; i >= 0; i--) {
+          if (rowCells[i].status === 'TYPED') {
+            rowCells[i] = { letter: '', status: 'EMPTY' };
+            break;
+          }
+        }
         return newGrid;
       });
-      setCurrentCol((prev) => prev + 1);
+    } else if (key.match(/^[A-Z]$/)) {
+      setGrid((prev) => {
+        const newGrid = prev.map(row => [...row]);
+        const rowCells = newGrid[currentRow];
+        // Target the first empty cell in the current row
+        const emptyIndex = rowCells.findIndex(c => c.letter === '' || c.status === 'EMPTY');
+        if (emptyIndex !== -1) {
+          rowCells[emptyIndex] = { letter: key, status: 'TYPED' };
+        }
+        return newGrid;
+      });
     }
-  }, [currentCol, currentRow, gameState, grid]);
+  }, [currentRow, gameState, grid]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -148,8 +180,8 @@ export const GameScreen = () => {
         <div className={styles.headerWrapper}>
           <Header 
             round={roomData?.state === 'WAITING_FOR_PLAYERS' ? 'WAITING' : roomData?.state || 'ROUND 1'} 
-            team1Score={roomData?.teams[0]?.score || 0} 
-            team2Score={roomData?.teams[1]?.score || 0} 
+            team1Score={roomData?.teams?.[0]?.score || 0} 
+            team2Score={roomData?.teams?.[1]?.score || 0} 
             timeLeft={timeLeft} 
           />
         </div>

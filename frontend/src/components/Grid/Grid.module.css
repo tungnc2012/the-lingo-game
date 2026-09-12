@@ -9,6 +9,16 @@
 .row {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
+}
+
+.rowNumber {
+  width: 2rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: 'Outfit', sans-serif;
 }
 
 .cellWrapper {

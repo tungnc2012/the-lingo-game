@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lingo-db
+    environment:
+      POSTGRES_USER: lingo_user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: lingo_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+    container_name: lingo-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/lingo_db
+      - SPRING_DATASOURCE_USERNAME=lingo_user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: lingo-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      # Use polling if running on Windows/Mac to ensure hot reload works reliably in Docker
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      # Mount local src to container for hot reload during development
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

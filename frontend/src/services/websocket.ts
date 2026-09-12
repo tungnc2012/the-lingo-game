@@ -25,6 +25,8 @@ class WebSocketService {
   private onStateUpdateCb: ((state: ClientGameRoom) => void) | null = null;
   private onGuessResultCb: ((result: GuessResult) => void) | null = null;
 
+  private pendingJoin: { roomId: string, playerName: string } | null = null;
+
   constructor() {
     this.client = new Client({
       brokerURL: `ws://${window.location.host}/ws`,
@@ -33,6 +35,13 @@ class WebSocketService {
         console.log('Connected to WebSocket!');
         if (this.currentRoomId) {
           this.subscribeToRoom(this.currentRoomId);
+        }
+        if (this.pendingJoin) {
+          this.client.publish({
+            destination: '/app/room.join',
+            body: JSON.stringify(this.pendingJoin),
+          });
+          this.pendingJoin = null;
         }
       },
     });
@@ -54,24 +63,13 @@ class WebSocketService {
     // Subscribe to room topics if already connected
     if (this.client.connected) {
       this.subscribeToRoom(roomId);
+      this.client.publish({
+        destination: '/app/room.join',
+        body: JSON.stringify({ roomId, playerName }),
+      });
     } else {
-      this.client.activate(); // will subscribe onConnect
-    }
-
-    // Wait a tick for connection to settle if needed, or just send immediately if connected
-    if (this.client.connected) {
-        this.client.publish({
-            destination: '/app/room.join',
-            body: JSON.stringify({ roomId, playerName }),
-        });
-    } else {
-        // Simple retry for prototype
-        setTimeout(() => {
-            this.client.publish({
-                destination: '/app/room.join',
-                body: JSON.stringify({ roomId, playerName }),
-            });
-        }, 1000);
+      this.pendingJoin = { roomId, playerName };
+      this.client.activate(); // will subscribe and publish onConnect
     }
   }
 

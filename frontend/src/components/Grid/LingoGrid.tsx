@@ -12,6 +12,7 @@ export const LingoGrid = ({ grid, currentRow }: LingoGridProps) => {
     <div className={styles.gridContainer}>
       {grid.map((row, rowIndex) => (
         <div key={`row-${rowIndex}`} className={styles.row}>
+          <div className={styles.rowNumber}>{rowIndex + 1}</div>
           {row.map((cell, colIndex) => (
             <LingoCell 
               key={`cell-${rowIndex}-${colIndex}`} 
