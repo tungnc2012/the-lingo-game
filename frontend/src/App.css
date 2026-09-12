@@ -1,0 +1,28 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 90vh;
+  gap: 2rem;
+}
+
+.app-logo {
+  position: absolute;
+  top: 1.5rem;
+  left: 2rem;
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(to right, #fecdd3, #fda4af); /* Soft pinkish gradient */
+  -webkit-background-clip: text;
+  color: transparent;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+  .app-logo {
+    position: static;
+    text-align: center;
+    margin-top: 0.5rem;
+    font-size: 1.5rem;
+  }
+}

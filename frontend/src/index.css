@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
+
+:root {
+  /* Game Show Theme Colors */
+  --bg-primary: #0a0f25;
+  --bg-secondary: #131b39;
+  --bg-glass: rgba(19, 27, 57, 0.7);
+  
+  --text-main: #ffffff;
+  --text-muted: #8892b0;
+  
+  --color-correct: #10b981; /* Vibrant Emerald Green */
+  --color-present: #f59e0b; /* Bright Amber */
+  --color-absent: #334155;  /* Slate */
+  --color-empty: #1e293b;
+  --color-border: #334155;
+  
+  --color-accent: #3b82f6; /* Blue for active elements */
+
+  font-family: 'Outfit', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: var(--text-main);
+  background-color: var(--bg-primary);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+}
+
+#root {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Base Animations */
+@keyframes pop {
+  0% { transform: scale(0.8); }
+  40% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes flip {
+  0% { transform: rotateX(0); }
+  50% { transform: rotateX(-90deg); }
+  100% { transform: rotateX(0); }
+}

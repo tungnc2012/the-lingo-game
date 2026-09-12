@@ -1,0 +1,121 @@
+.gameScreen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 2rem;
+  width: 100%;
+}
+
+.topSection {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(to right, #fecdd3, #fda4af); /* Soft pinkish gradient */
+  -webkit-background-clip: text;
+  color: transparent;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 1px;
+}
+
+.headerWrapper {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .logo {
+    position: static;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.keyboardSection {
+  margin-top: auto;
+  padding-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .keyboardSection {
+    display: none;
+  }
+}
+
+/* Modal/Overlay */
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal {
+  background: var(--bg-glass);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3rem;
+  border-radius: 1rem;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  transform: scale(0.9);
+  animation: popIn 0.3s ease forwards;
+}
+
+.modal h2 {
+  margin-top: 0;
+  font-size: 2rem;
+  color: var(--color-correct);
+}
+
+.modal strong {
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  color: var(--text-main);
+}
+
+.btnPrimary {
+  margin-top: 2rem;
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  to { transform: scale(1); }
+}

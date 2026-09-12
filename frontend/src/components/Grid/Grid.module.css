@@ -1,0 +1,104 @@
+.gridContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 2rem 0;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.cellWrapper {
+  width: 4rem;
+  height: 4rem;
+  perspective: 1000px;
+}
+
+.cell {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.cellInner {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.cellFront, .cellBack {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  backface-visibility: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-radius: 0.5rem;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+}
+
+.cellFront {
+  background-color: var(--color-empty);
+  border: 2px solid var(--color-border);
+}
+
+.cellBack {
+  transform: rotateX(180deg);
+}
+
+/* Animations */
+.typed .cellFront {
+  border-color: var(--text-muted);
+  animation: pop 0.2s ease-in-out;
+}
+
+.activeRowCell .cellFront {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.flip .cellInner {
+  animation: flipTile 0.6s ease-in-out forwards;
+}
+
+@keyframes flipTile {
+  0% { transform: rotateX(0); }
+  100% { transform: rotateX(180deg); }
+}
+
+/* Status Colors (applied to the back face) */
+.correct .cellBack {
+  background-color: var(--color-correct);
+  border: 2px solid var(--color-correct);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+.present .cellBack {
+  background-color: var(--color-present);
+  border: 2px solid var(--color-present);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+}
+
+.absent .cellBack {
+  background-color: var(--color-absent);
+  border: 2px solid var(--color-absent);
+}
+
+@media (max-width: 480px) {
+  .cellWrapper {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  .cellFront, .cellBack {
+    font-size: 1.75rem;
+  }
+}
