@@ -1,0 +1,218 @@
+.landingScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  background: var(--bg-main);
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 1000px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.leftPanel {
+  flex: 1;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rightPanel {
+  flex: 1;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.logo {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 3rem;
+  font-family: 'Outfit', sans-serif;
+  text-align: left;
+}
+
+.logoThe {
+  color: #fda4af;
+}
+
+.logoLingo {
+  background: linear-gradient(to right, #fecdd3, #fda4af);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.logoGame {
+  color: #fff;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.btnAction {
+  padding: 1.25rem 2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-family: 'Outfit', sans-serif;
+}
+
+.btnAction:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btnAction.primary {
+  background: linear-gradient(to right, #ec4899, #f43f5e);
+  border: none;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+}
+
+.btnAction.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(236, 72, 153, 0.6);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.inputGroup input {
+  padding: 1.25rem;
+  font-size: 1.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  text-align: center;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.inputGroup input:focus {
+  outline: none;
+  border-color: #f43f5e;
+  box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.2);
+}
+
+.previewGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  opacity: 0.8;
+  transform: scale(0.8);
+}
+
+.previewRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.previewCell {
+  width: 3.5rem;
+  height: 3.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  border-radius: 0.5rem;
+  border: 2px solid var(--color-border);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.previewCell.correct {
+  background: var(--color-correct);
+  border-color: var(--color-correct);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+.previewCell.present {
+  background: var(--color-present);
+  border-color: var(--color-present);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+}
+
+.previewCell.typed {
+  border-color: var(--text-muted);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  margin: 0.5rem 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider::before {
+  margin-right: 1rem;
+}
+
+.divider::after {
+  margin-left: 1rem;
+}
+
+.btnIcon {
+  font-size: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  .leftPanel, .rightPanel {
+    padding: 2rem;
+  }
+  .rightPanel {
+    display: none;
+  }
+  .logo {
+    font-size: 3rem;
+    text-align: center;
+  }
+}

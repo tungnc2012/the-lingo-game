@@ -16,7 +16,8 @@ export interface ClientGameRoom {
 export interface GuessResult {
   guess: string;
   evaluation: string[];
-  isCorrect: boolean;
+  correct: boolean;
+  targetWord?: string;
 }
 
 class WebSocketService {
@@ -94,6 +95,16 @@ class WebSocketService {
       this.client.publish({
         destination: '/app/room.guess',
         body: JSON.stringify({ roomId, guess }),
+      });
+    }
+  }
+
+  nextTurn(roomId: string) {
+    if (this.client.connected) {
+      // Reusing JoinRoomRequest payload format which has roomId and playerName
+      this.client.publish({
+        destination: '/app/room.nextTurn',
+        body: JSON.stringify({ roomId, playerName: '' }),
       });
     }
   }

@@ -50,12 +50,22 @@ public class GameController {
             // Broadcast the guess result
             messagingTemplate.convertAndSend("/topic/room/" + request.getRoomId() + "/guess", result);
             
-            // Broadcast the updated room state (e.g. if attempts increased or state changed)
             GameRoom room = gameService.getRoom(request.getRoomId());
             if (room != null) {
+                // Broadcast the updated room state (attempt increased)
                 ClientGameRoom clientRoom = gameService.mapToClientRoom(room);
                 messagingTemplate.convertAndSend("/topic/room/" + room.getRoomId(), clientRoom);
             }
+        }
+    }
+
+    @MessageMapping("/room.nextTurn")
+    public void nextTurn(@Payload JoinRoomRequest request) {
+        GameRoom room = gameService.getRoom(request.getRoomId());
+        if (room != null) {
+            gameService.startNewTurn(room, 5);
+            ClientGameRoom clientRoom = gameService.mapToClientRoom(room);
+            messagingTemplate.convertAndSend("/topic/room/" + room.getRoomId(), clientRoom);
         }
     }
 }

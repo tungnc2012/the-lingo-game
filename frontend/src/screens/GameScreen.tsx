@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header/Header';
 import { LingoGrid } from '../components/Grid/LingoGrid';
 import { Keyboard } from '../components/Keyboard/Keyboard';
@@ -8,32 +9,52 @@ import { wsService } from '../services/websocket';
 import type { ClientGameRoom, GuessResult } from '../services/websocket';
 import styles from './GameScreen.module.css';
 
-const ROOM_ID = "ROOM-" + Math.floor(Math.random() * 10000);
 const PLAYER_NAME = "DevUser";
 const MAX_ATTEMPTS = 5;
-const WORD_LENGTH = 4; // Backend hardcodes "WORD" which is 4 letters
+const WORD_LENGTH = 5;
 
 export const GameScreen = () => {
+  const { roomId } = useParams<{ roomId: string }>();
+  const navigate = useNavigate();
+
   const [grid, setGrid] = useState<CellData[][]>(generateEmptyGrid(MAX_ATTEMPTS, WORD_LENGTH));
   const [currentRow, setCurrentRow] = useState(0);
   const [gameState, setGameState] = useState<'CONNECTING' | 'PLAYING' | 'WON' | 'LOST'>('CONNECTING');
-  const [timeLeft, setTimeLeft] = useState(10);
+  const [timeLeft, setTimeLeft] = useState(20);
   const [letterStatuses, setLetterStatuses] = useState<{ [key: string]: LetterStatus }>({});
   const [roomData, setRoomData] = useState<ClientGameRoom | null>(null);
+  const [targetWord, setTargetWord] = useState<string | null>(null);
+  const lastSubmittedRowRef = useRef<number>(-1);
   const handleGuessResultRef = useRef<typeof handleGuessResult | null>(null);
 
   useEffect(() => {
+    if (!roomId) return;
+
     wsService.connect(
       (state) => {
         setRoomData(state);
-        setGameState('PLAYING');
-        setTimeLeft(Math.ceil((state.timeRemainingMs || 10000) / 1000));
+        setGameState((prev) => {
+          if (state.currentAttempt === 1) return 'PLAYING';
+          if (prev === 'CONNECTING') return 'PLAYING';
+          return prev;
+        });
+        setTimeLeft(Math.ceil((state.timeRemainingMs || 20000) / 1000));
         
+        if (state.currentAttempt === 1) {
+           setGrid(generateEmptyGrid(MAX_ATTEMPTS, WORD_LENGTH));
+           setCurrentRow(0);
+           setLetterStatuses({});
+           setTargetWord(null);
+           lastSubmittedRowRef.current = -1;
+        }
+
         // Setup initial revealed letters
         if (state.revealedLetters && state.revealedLetters.length > 0 && state.currentAttempt && state.currentAttempt > 0 && state.currentAttempt <= MAX_ATTEMPTS) {
            setGrid((prev) => {
-             const newGrid = [...prev];
-             newGrid[state.currentAttempt - 1][0] = { letter: state.revealedLetters![0], status: 'TYPED' };
+             const newGrid = prev.map(r => [...r]);
+             if (newGrid[state.currentAttempt! - 1][0].status === 'EMPTY') {
+                 newGrid[state.currentAttempt! - 1][0] = { letter: state.revealedLetters![0], status: 'TYPED' };
+             }
              return newGrid;
            });
         }
@@ -45,10 +66,10 @@ export const GameScreen = () => {
       }
     );
 
-    wsService.joinRoom(ROOM_ID, PLAYER_NAME);
+    wsService.joinRoom(roomId, PLAYER_NAME);
 
     return () => wsService.disconnect();
-  }, []);
+  }, [roomId]);
 
   const handleGuessResult = (result: GuessResult) => {
     const newGrid = [...grid];
@@ -69,10 +90,12 @@ export const GameScreen = () => {
     setGrid(newGrid);
     setLetterStatuses(newLetterStatuses);
 
-    if (result.isCorrect) {
+    if (result.correct) {
       setGameState('WON');
+      if (result.targetWord) setTargetWord(result.targetWord);
     } else if (currentRow + 1 >= MAX_ATTEMPTS) {
       setGameState('LOST');
+      if (result.targetWord) setTargetWord(result.targetWord);
     } else {
       setCurrentRow((prev) => prev + 1);
       
@@ -123,6 +146,14 @@ export const GameScreen = () => {
     return () => clearInterval(timer);
   }, [gameState, currentRow]);
 
+  useEffect(() => {
+    if (gameState === 'PLAYING' && timeLeft === 0 && roomId && lastSubmittedRowRef.current !== currentRow) {
+      lastSubmittedRowRef.current = currentRow;
+      const guess = grid[currentRow].map(c => c.letter).join('');
+      wsService.submitGuess(roomId, guess);
+    }
+  }, [gameState, timeLeft, roomId, currentRow, grid]);
+
   const onKeyPress = useCallback((key: string) => {
     if (gameState !== 'PLAYING') return;
 
@@ -130,14 +161,16 @@ export const GameScreen = () => {
       const currentRowCells = grid[currentRow];
       const isComplete = currentRowCells && currentRowCells.every(c => c.letter !== '');
       if (!isComplete) return;
+      if (!roomId) return;
+      if (lastSubmittedRowRef.current === currentRow) return;
 
+      lastSubmittedRowRef.current = currentRow;
       const guess = currentRowCells.map(c => c.letter).join('');
-      wsService.submitGuess(ROOM_ID, guess);
+      wsService.submitGuess(roomId, guess);
     } else if (key === '⌫' || key === 'BACKSPACE') {
       setGrid((prev) => {
         const newGrid = prev.map(row => [...row]);
         const rowCells = newGrid[currentRow];
-        // Backspace removes the last user-typed letter ('TYPED'), preserving pre-filled 'CORRECT' letters
         for (let i = rowCells.length - 1; i >= 0; i--) {
           if (rowCells[i].status === 'TYPED') {
             rowCells[i] = { letter: '', status: 'EMPTY' };
@@ -150,7 +183,6 @@ export const GameScreen = () => {
       setGrid((prev) => {
         const newGrid = prev.map(row => [...row]);
         const rowCells = newGrid[currentRow];
-        // Target the first empty cell in the current row
         const emptyIndex = rowCells.findIndex(c => c.letter === '' || c.status === 'EMPTY');
         if (emptyIndex !== -1) {
           rowCells[emptyIndex] = { letter: key, status: 'TYPED' };
@@ -158,7 +190,7 @@ export const GameScreen = () => {
         return newGrid;
       });
     }
-  }, [currentRow, gameState, grid]);
+  }, [currentRow, gameState, grid, roomId]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -175,6 +207,10 @@ export const GameScreen = () => {
 
   return (
     <div className={styles.gameScreen}>
+      <div className={styles.clockWidget}>
+        00:{timeLeft.toString().padStart(2, '0')}
+      </div>
+      
       <div className={styles.topSection}>
         <div className={styles.logo}>The Lingo Game</div>
         <div className={styles.headerWrapper}>
@@ -204,10 +240,25 @@ export const GameScreen = () => {
       )}
 
       {(gameState === 'WON' || gameState === 'LOST') && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
+        <div className={styles.bannerOverlay}>
+          <div className={`${styles.banner} ${gameState === 'WON' ? styles.bannerWon : styles.bannerLost}`}>
             <h2>{gameState === 'WON' ? 'You Guessed It!' : 'Out of Attempts!'}</h2>
-            <button className={styles.btnPrimary} onClick={() => window.location.reload()}>Play Again</button>
+            {targetWord && (
+              <div className={styles.targetWordReveal}>
+                The word was: <strong>{targetWord}</strong>
+              </div>
+            )}
+            <div className={styles.bannerActions}>
+              <button 
+                className={styles.btnPrimary} 
+                onClick={() => {
+                  setGameState('CONNECTING');
+                  wsService.nextTurn(roomId!);
+                }}
+              >
+                Next Word
+              </button>
+            </div>
           </div>
         </div>
       )}

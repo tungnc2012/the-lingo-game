@@ -54,13 +54,19 @@ public class GameService {
         }
     }
 
-    private void startNewTurn(GameRoom room, int wordLength) {
+    private static final List<String> DICTIONARY = List.of(
+        "APPLE", "BERRY", "GRAPE", "LEMON", "MELON", "PEACH", "PEARL", "PLUMS",
+        "SOUND", "COLOR", "LIGHT", "WATER", "EARTH", "HEART", "SMILE", "TRAIN", "HOUSE"
+    );
+
+    public void startNewTurn(GameRoom room, int wordLength) {
         TurnContext context = new TurnContext();
         context.setMaxAttempts(5);
         context.setCurrentAttempt(1);
         context.setTurnStartTime(System.currentTimeMillis());
-        // TODO: Randomly select a word from a dictionary
-        context.setTargetWord("WORD"); 
+        
+        String randomWord = DICTIONARY.get((int) (Math.random() * DICTIONARY.size()));
+        context.setTargetWord(randomWord);
         
         List<Character> revealed = new ArrayList<>();
         revealed.add(context.getTargetWord().charAt(0));
@@ -75,7 +81,13 @@ public class GameService {
         
         TurnContext ctx = room.getTurnContext();
         String target = ctx.getTargetWord().toUpperCase();
+        
+        // Handle timeout or incomplete guess by padding it
+        if (guess == null) guess = "";
         guess = guess.toUpperCase();
+        while (guess.length() < target.length()) {
+            guess += " "; // Pad with spaces to evaluate as ABSENT
+        }
         
         List<LetterStatus> evaluation = new ArrayList<>();
         boolean isCorrect = guess.equals(target);
@@ -83,8 +95,8 @@ public class GameService {
         char[] targetChars = target.toCharArray();
         
         // First pass: CORRECT
-        for (int i = 0; i < guess.length(); i++) {
-            if (i < target.length() && guess.charAt(i) == targetChars[i]) {
+        for (int i = 0; i < target.length(); i++) {
+            if (i < guess.length() && guess.charAt(i) == targetChars[i]) {
                 evaluation.add(LetterStatus.CORRECT);
                 targetChars[i] = '#';
             } else {
@@ -93,12 +105,12 @@ public class GameService {
         }
         
         // Second pass: PRESENT / ABSENT
-        for (int i = 0; i < guess.length(); i++) {
+        for (int i = 0; i < target.length(); i++) {
             if (evaluation.get(i) != LetterStatus.CORRECT) {
-                char c = guess.charAt(i);
+                char c = i < guess.length() ? guess.charAt(i) : ' ';
                 boolean found = false;
                 for (int j = 0; j < targetChars.length; j++) {
-                    if (targetChars[j] == c) {
+                    if (targetChars[j] == c && c != ' ') {
                         evaluation.set(i, LetterStatus.PRESENT);
                         targetChars[j] = '#';
                         found = true;
@@ -112,8 +124,14 @@ public class GameService {
         }
         
         ctx.setCurrentAttempt(ctx.getCurrentAttempt() + 1);
+        ctx.setTurnStartTime(System.currentTimeMillis()); // Reset timer for next attempt
         
-        return new GuessResult(guess, evaluation, isCorrect);
+        String revealedTargetWord = null;
+        if (isCorrect || ctx.getCurrentAttempt() > ctx.getMaxAttempts()) {
+            revealedTargetWord = target;
+        }
+        
+        return new GuessResult(guess, evaluation, isCorrect, revealedTargetWord);
     }
 
     public ClientGameRoom mapToClientRoom(GameRoom room) {
@@ -127,7 +145,7 @@ public class GameService {
             clientRoom.setMaxAttempts(room.getTurnContext().getMaxAttempts());
             clientRoom.setWordLength(room.getTurnContext().getTargetWord().length());
             long elapsed = System.currentTimeMillis() - room.getTurnContext().getTurnStartTime();
-            clientRoom.setTimeRemainingMs(Math.max(0, 10000 - elapsed));
+            clientRoom.setTimeRemainingMs(Math.max(0, 20000 - elapsed));
         }
         return clientRoom;
     }

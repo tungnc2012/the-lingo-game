@@ -1,3 +1,4 @@
+import React from 'react';
 import styles from './Header.module.css';
 
 interface HeaderProps {
@@ -9,25 +10,20 @@ interface HeaderProps {
 
 export const Header = ({ round, team1Score, team2Score, timeLeft }: HeaderProps) => {
   return (
-    <header className={styles.header}>
-      <div className={styles.scores}>
-        <div className={styles.team}>
-          <span className={styles.teamName}>Team 1</span>
-          <span className={styles.score}>{team1Score} pts</span>
-        </div>
-        <div className={styles.round}>{round}</div>
-        <div className={styles.team}>
-          <span className={styles.teamName}>Team 2</span>
-          <span className={styles.score}>{team2Score} pts</span>
-        </div>
+    <div className={styles.header}>
+      <div className={`${styles.teamScore} ${styles.team1}`}>
+        <span className={styles.teamName}>TEAM 1</span>
+        <span className={styles.score}>{team1Score} pts</span>
       </div>
       
-      <div className={styles.timerContainer}>
-        <div 
-          className={`${styles.timerBar} ${timeLeft <= 3 ? styles.timerWarning : ''}`}
-          style={{ width: `${(timeLeft / 10) * 100}%` }}
-        />
+      <div className={styles.roundInfo}>
+        <div className={styles.roundBadge}>{round}</div>
       </div>
-    </header>
+
+      <div className={`${styles.teamScore} ${styles.team2}`}>
+        <span className={styles.teamName}>TEAM 2</span>
+        <span className={styles.score}>{team2Score} pts</span>
+      </div>
+    </div>
   );
 };
