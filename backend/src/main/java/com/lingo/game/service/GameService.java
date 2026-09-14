@@ -168,27 +168,12 @@ public class GameService {
         TurnContext ctx = room.getTurnContext();
         String target = ctx.getTargetWord().toUpperCase();
 
-        // Already in steal → steal has also failed, reveal the word
-        if (ctx.isStealAttempt()) {
+        // If this violation happened on the last attempt, end the game/reveal word
+        if (ctx.getCurrentAttempt() > ctx.getMaxAttempts()) {
             return new GuessResult("", createAbsentEvaluation(target.length()), false, target);
         }
 
-        // No grid rows left for the steal team → reveal word without steal
-        if (ctx.getCurrentAttempt() > MAX_GRID_ROWS) {
-            return new GuessResult("", createAbsentEvaluation(target.length()), false, target);
-        }
-
-        // Reveal one additional unrevealed letter for the stealing team
-        revealAdditionalLetter(ctx, target);
-
-        // Set up steal: opposing team gets exactly 1 attempt with a 10s timer
-        String opposingTeamId = room.getOpposingTeamId();
-        ctx.setStealAttempt(true);
-        ctx.setStealingTeamId(opposingTeamId);
-        ctx.setActiveTeamId(opposingTeamId);
-        // maxAttempts = currentAttempt means only this one row is allowed
-        ctx.setMaxAttempts(ctx.getCurrentAttempt());
-        ctx.setTimeLimitMs(STEAL_TIME_LIMIT_MS);
+        // Do not trigger a steal. Just consume the attempt, reset the timer, and let the user continue on the next row.
         ctx.setTurnStartTime(System.currentTimeMillis());
 
         GuessResult result = new GuessResult("", createAbsentEvaluation(target.length()), false, null);

@@ -1,8 +1,6 @@
 ## Plan
-1. **GameService.java**:
-   - Remove dictionary validation logic entirely so any 5-letter guess is accepted (Fixes "dont let user feel free to guess a word").
-   - Modify the "ATTEMPTS_EXHAUSTED" logic. Instead of triggering a Steal on the 5th failed attempt, simply return the `GuessResult` with `targetWord` set so the UI can display the 5th attempt's evaluation and end the game.
-   - Adjust `MAX_GRID_ROWS` if necessary (but 5 is fine since Steal will only happen on timeouts now, which use the same row).
-2. **GameScreen.tsx**:
-   - Remove the `if (nextRow >= MAX_ATTEMPTS) { setGameState('LOST'); return; }` block. The frontend should just rely on the backend sending `targetWord` to transition to `LOST`.
-   - Update Case 2 (turn over) to ensure it calls `setLetterStatuses` so the keyboard updates for the final guess.
+Fix the frontend race condition that causes an instant timeout on the next row.
+1. When the user manually submits a guess via `onKeyPress('ENTER')`, optimistically reset `timeLeft` to 20 (and clear the local interval) so it doesn't stay at 0.
+2. When the auto-submit `useEffect` fires (because of a timeout), also reset `timeLeft` to 20 so that when the backend advances the row, the frontend doesn't immediately submit *another* timeout for the new row.
+
+This race condition happens because `/topic/guess` and `/topic/room` arrive separately. The frontend processes the guess, advances to the next row, and if `timeLeft` is still 0 (because the room state update hasn't been processed yet), it instantly auto-submits an empty guess (timeout) for the new row. If this happens after the 4th attempt, the backend sees a timeout on the 5th attempt and ends the game prematurely.

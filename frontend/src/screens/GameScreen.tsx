@@ -15,10 +15,10 @@ const WORD_LENGTH = 5;
 const DEFAULT_TIME = 20;
 
 const VIOLATION_MESSAGES: Record<string, string> = {
-  TIME_EXPIRED: '⏰ Time\'s up! Steal opportunity!',
-  INVALID_WORD: '❌ Not a valid word! Steal opportunity!',
-  INVALID_LENGTH: '❌ Wrong length! Steal opportunity!',
-  ATTEMPTS_EXHAUSTED: '💔 Out of attempts! Steal opportunity!',
+  TIME_EXPIRED: '⏰ Time\'s up!',
+  INVALID_WORD: '❌ Not a valid word!',
+  INVALID_LENGTH: '❌ Wrong length!',
+  ATTEMPTS_EXHAUSTED: '💔 Out of attempts!',
 };
 
 export const GameScreen = () => {
@@ -301,6 +301,14 @@ export const GameScreen = () => {
     ) {
       lastSubmittedRowRef.current = currentRow;
 
+      // Optimistically pause/reset timer to prevent it triggering again on the next row
+      // before the server's room state update arrives.
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      setTimeLeft(DEFAULT_TIME);
+
       const rowCells = grid[currentRow];
       const isComplete = rowCells?.every((c) => c.letter !== '' && c.letter !== ' ');
 
@@ -327,6 +335,14 @@ export const GameScreen = () => {
 
         lastSubmittedRowRef.current = currentRow;
         const guess = rowCells.map((c) => c.letter).join('');
+
+        // Optimistically pause/reset timer
+        if (timerIntervalRef.current) {
+          clearInterval(timerIntervalRef.current);
+          timerIntervalRef.current = null;
+        }
+        setTimeLeft(DEFAULT_TIME);
+
         wsService.submitGuess(roomId, guess);
       } else if (key === '⌫' || key === 'BACKSPACE') {
         setGrid((prev) => {
