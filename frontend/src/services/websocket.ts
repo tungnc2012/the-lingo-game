@@ -11,6 +11,8 @@ export interface ClientGameRoom {
   maxAttempts?: number;
   wordLength?: number;
   timeRemainingMs?: number;
+  stealAttempt?: boolean;
+  violationReason?: string;
 }
 
 export interface GuessResult {
@@ -18,6 +20,8 @@ export interface GuessResult {
   evaluation: string[];
   correct: boolean;
   targetWord?: string;
+  violationReason?: string;
+  rejected?: boolean;  // true = invalid word, attempt NOT consumed, player can retry
 }
 
 class WebSocketService {

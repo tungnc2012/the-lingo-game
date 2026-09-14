@@ -8,17 +8,15 @@ The game consists of multiple rounds that scale in difficulty:
 - **Round 2**: 5-letter words. Teams take turns playing their own boards.
 - **Quickfire Round**: A buzzer-based round where both teams compete to guess the same word (often starting as a 6-letter word, with letters revealed one by one).
 
-*For our beta, we will focus on the core turn-based 5-letter Lingo format.*
-
 ## 2. Turn Mechanics & Time Limit
 - Each team has a maximum of **5 attempts** to guess the mystery word.
 - The **first letter** is always revealed at the start of the turn.
-- The team has exactly **10 seconds** to submit a guess for *each* attempt.
-- If the 10-second timer expires before a valid word is submitted, the team loses that attempt and incurs a **Violation**.
+- The team has exactly **20 seconds** to submit a guess for *each* attempt.
+- If the 20-second timer expires before a valid word is submitted, the team loses that attempt and incurs a **Violation**.
 
 ## 3. Violations & Steals
 A team's turn ends immediately, and control passes to the opponent (a "Steal") if:
-1. They run out of time (10 seconds expire).
+1. They run out of time (20 seconds expire).
 2. They submit a word that is not in the dictionary (invalid word).
 3. They exhaust all 5 attempts without guessing the word.
 

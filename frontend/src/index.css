@@ -17,6 +17,18 @@
   
   --color-accent: #3b82f6; /* Blue for active elements */
 
+  /* Team Accent Colors */
+  --team-1-color: #ec4899;  /* Hot Pink */
+  --team-1-glow: rgba(236, 72, 153, 0.4);
+  --team-2-color: #3b82f6;  /* Royal Blue */
+  --team-2-glow: rgba(59, 130, 246, 0.4);
+
+  /* Timer Colors */
+  --timer-safe: #3b82f6;
+  --timer-warning: #f59e0b;
+  --timer-danger: #ef4444;
+  --timer-danger-glow: rgba(239, 68, 68, 0.6);
+
   font-family: 'Outfit', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -52,7 +64,8 @@ body {
   box-sizing: border-box;
 }
 
-/* Base Animations */
+/* ===== Reusable Keyframe Animations ===== */
+
 @keyframes pop {
   0% { transform: scale(0.8); }
   40% { transform: scale(1.1); }
@@ -63,4 +76,57 @@ body {
   0% { transform: rotateX(0); }
   50% { transform: rotateX(-90deg); }
   100% { transform: rotateX(0); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--glow-color, rgba(255,255,255,0.2)); }
+  50% { box-shadow: 0 0 20px var(--glow-color, rgba(255,255,255,0.4)), 0 0 40px var(--glow-color, rgba(255,255,255,0.15)); }
+}
+
+@keyframes shakeRow {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-4px); }
+  30%, 70% { transform: translateX(4px); }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(255,255,255,0.1); }
+  50% { border-color: rgba(255,255,255,0.3); }
+}
+
+@keyframes cellReveal {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
 }

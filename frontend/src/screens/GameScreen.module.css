@@ -2,29 +2,32 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding: 2rem;
+  padding: 1.5rem;
   width: 100%;
   position: relative;
+  overflow: hidden;
 }
 
+/* ===== Top Section: Logo + Scoreboard ===== */
 .topSection {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .logo {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
-  background: linear-gradient(to right, #fecdd3, #fda4af);
+  background: linear-gradient(135deg, #fecdd3, #fda4af, #ec4899);
   -webkit-background-clip: text;
   color: transparent;
   font-family: 'Outfit', sans-serif;
   letter-spacing: 1px;
   text-align: center;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .headerWrapper {
@@ -32,30 +35,28 @@
   max-width: 600px;
 }
 
+/* ===== Main Content (Grid) ===== */
 .mainContent {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  min-height: 0;
 }
 
+/* ===== Keyboard Section ===== */
 .keyboardSection {
-  margin-top: auto;
-  padding-bottom: 1rem;
+  padding: 0.5rem 0 1rem;
+  flex-shrink: 0;
 }
 
-@media (min-width: 768px) {
-  .keyboardSection {
-    display: none;
-  }
-}
-
-/* Modal/Overlay */
+/* ===== Connecting Overlay ===== */
 .overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -66,69 +67,41 @@
 .modal {
   background: var(--bg-glass);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 3rem;
-  border-radius: 1rem;
+  padding: 3rem 4rem;
+  border-radius: 1.25rem;
   text-align: center;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-  transform: scale(0.9);
-  animation: popIn 0.3s ease forwards;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: popIn 0.4s ease forwards;
 }
 
 .modal h2 {
-  margin-top: 0;
-  font-size: 2rem;
-  color: var(--color-correct);
-}
-
-.modal strong {
-  font-size: 1.5rem;
-  letter-spacing: 2px;
+  margin: 1rem 0 0.5rem;
+  font-size: 1.75rem;
   color: var(--text-main);
 }
 
-.btnPrimary {
-  margin-top: 2rem;
-  padding: 0.75rem 2rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: white;
-  background: linear-gradient(to right, #3b82f6, #2563eb);
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+.modalSub {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0;
 }
 
-.btnPrimary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5);
+/* Loading spinner */
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: spin 0.8s linear infinite;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-@keyframes popIn {
-  to { transform: scale(1); }
-}
-
-.clockWidget {
-  position: absolute;
-  top: 1.5rem;
-  right: 2rem;
-  font-family: monospace;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #FF5A5F;
-  text-shadow: 0 0 10px rgba(255, 90, 95, 0.5);
-  background: rgba(0, 0, 0, 0.3);
-  padding: 0.5rem 1rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 90, 95, 0.2);
-  z-index: 10;
-}
-
+/* ===== Win/Loss Banner ===== */
 .bannerOverlay {
   position: fixed;
   top: 0;
@@ -138,27 +111,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 15, 30, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(10, 15, 30, 0.75);
+  backdrop-filter: blur(6px);
   z-index: 100;
   animation: fadeIn 0.3s ease-out;
 }
 
 .banner {
-  padding: 2rem 4rem;
-  border-radius: 16px;
+  padding: 2.5rem 4rem;
+  border-radius: 1.25rem;
   text-align: center;
-  transform: translateY(20px);
-  animation: slideUp 0.3s ease-out forwards;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  animation: popIn 0.4s ease-out forwards;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  max-width: 90vw;
+}
+
+.bannerEmoji {
+  font-size: 3.5rem;
+  margin-bottom: 0.5rem;
+  animation: pop 0.5s ease-out 0.3s both;
 }
 
 .banner h2 {
-  font-size: 2.5rem;
+  font-size: 2.25rem;
   margin: 0 0 1rem 0;
   color: white;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
+  font-weight: 800;
 }
 
 .banner p {
@@ -168,35 +148,82 @@
 }
 
 .bannerWon {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-  border: 2px solid #34D399;
+  background: linear-gradient(135deg, #059669 0%, #10B981 50%, #34D399 100%);
+  border: 2px solid rgba(52, 211, 153, 0.6);
 }
 
 .bannerLost {
-  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-  border: 2px solid #F87171;
+  background: linear-gradient(135deg, #DC2626 0%, #EF4444 50%, #F87171 100%);
+  border: 2px solid rgba(248, 113, 113, 0.6);
 }
 
 .targetWordReveal {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   color: #fff;
   margin-bottom: 1.5rem;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 0.5rem 1.5rem;
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.75rem 2rem;
+  border-radius: 0.75rem;
   display: inline-block;
+  backdrop-filter: blur(5px);
 }
 
 .targetWordReveal strong {
   color: #FCD34D;
-  letter-spacing: 2px;
-  font-size: 1.8rem;
+  letter-spacing: 3px;
+  font-size: 1.6rem;
+  font-weight: 800;
 }
 
 .bannerActions {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 
-@keyframes slideUp {
-  to { transform: translateY(0); }
+/* ===== Primary Button ===== */
+.btnPrimary {
+  padding: 0.85rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.btnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+}
+
+.btnPrimary:active {
+  transform: translateY(0);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  .gameScreen {
+    padding: 0.75rem;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+  }
+
+  .banner {
+    padding: 2rem 2.5rem;
+  }
+
+  .banner h2 {
+    font-size: 1.75rem;
+    letter-spacing: 1px;
+  }
+
+  .bannerEmoji {
+    font-size: 2.5rem;
+  }
 }

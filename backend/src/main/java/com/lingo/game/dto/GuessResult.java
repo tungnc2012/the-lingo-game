@@ -8,6 +8,9 @@ public class GuessResult {
     private List<LetterStatus> evaluation;
     private boolean isCorrect;
     private String targetWord; // Null unless the turn has ended
+    private String violationReason; // Null unless a violation occurred
+    /** True when the word was rejected without consuming an attempt (e.g. not in dictionary). */
+    private boolean rejected;
 
     public GuessResult() {}
 
@@ -35,4 +38,10 @@ public class GuessResult {
 
     public String getTargetWord() { return targetWord; }
     public void setTargetWord(String targetWord) { this.targetWord = targetWord; }
+
+    public String getViolationReason() { return violationReason; }
+    public void setViolationReason(String violationReason) { this.violationReason = violationReason; }
+
+    public boolean isRejected() { return rejected; }
+    public void setRejected(boolean rejected) { this.rejected = rejected; }
 }

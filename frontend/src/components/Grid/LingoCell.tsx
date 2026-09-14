@@ -19,18 +19,20 @@ export const LingoCell = ({ data, isActive, animationDelay }: LingoCellProps) =>
   };
 
   const isEvaluated = data.status === 'CORRECT' || data.status === 'PRESENT' || data.status === 'ABSENT';
+  const isPreFilled = data.status === 'CORRECT' && isActive;
 
   return (
     <div className={`${styles.cellWrapper} ${isActive ? styles.activeRowCell : ''}`}>
       <div 
-        className={`${styles.cell} ${getStatusClass()} ${isEvaluated ? styles.flip : ''}`}
-        style={{ animationDelay: `${animationDelay}ms` }}
+        className={`${styles.cell} ${getStatusClass()} ${isEvaluated && !isActive ? styles.flip : ''} ${isPreFilled ? styles.preFilled : ''}`}
+        style={isEvaluated && !isActive ? { animationDelay: `${animationDelay}ms` } : undefined}
       >
         <div className={styles.cellInner}>
           <div className={styles.cellFront}>
-            {data.letter}
+            {/* Only show letter on front if it's being typed or pre-filled */}
+            {(data.status === 'TYPED' || (data.status === 'CORRECT' && isActive)) ? data.letter : ''}
           </div>
-          <div className={styles.cellBack}>
+          <div className={`${styles.cellBack} ${getStatusClass()}`}>
             {data.letter}
           </div>
         </div>

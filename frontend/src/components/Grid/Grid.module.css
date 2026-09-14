@@ -3,7 +3,8 @@
   flex-direction: column;
   gap: 0.5rem;
   align-items: center;
-  margin: 2rem 0;
+  margin: 1.5rem 0;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .row {
@@ -12,15 +13,22 @@
   align-items: center;
 }
 
+.row.shake {
+  animation: shakeRow 0.4s ease-in-out;
+}
+
 .rowNumber {
   width: 2rem;
   text-align: center;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-muted);
   font-family: 'Outfit', sans-serif;
+  opacity: 0.5;
+  transition: opacity 0.3s;
 }
 
+/* ===== Cell Wrapper & 3D Setup ===== */
 .cellWrapper {
   width: 4rem;
   height: 4rem;
@@ -38,7 +46,7 @@
 .cellInner {
   width: 100%;
   height: 100%;
-  position: absolute;
+  position: relative;
   transform-style: preserve-3d;
 }
 
@@ -50,11 +58,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 800;
   text-transform: uppercase;
   border-radius: 0.5rem;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+  color: var(--text-main);
 }
 
 .cellFront {
@@ -64,18 +72,31 @@
 
 .cellBack {
   transform: rotateX(180deg);
+  border: 2px solid transparent;
 }
 
-/* Animations */
-.typed .cellFront {
-  border-color: var(--text-muted);
-  animation: pop 0.2s ease-in-out;
-}
-
+/* ===== Active Row Glow ===== */
 .activeRowCell .cellFront {
   border-color: rgba(255, 255, 255, 0.2);
+  --glow-color: rgba(59, 130, 246, 0.15);
+  animation: glowPulse 2.5s ease-in-out infinite;
 }
 
+/* ===== Typed State ===== */
+.typed .cellFront {
+  border-color: var(--text-muted);
+  animation: pop 0.15s ease-in-out;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ===== Pre-filled Green Letters (carry-down) ===== */
+.preFilled .cellFront {
+  background-color: var(--color-correct);
+  border-color: var(--color-correct);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+/* ===== Flip Animation ===== */
 .flip .cellInner {
   animation: flipTile 0.6s ease-in-out forwards;
 }
@@ -85,30 +106,39 @@
   100% { transform: rotateX(180deg); }
 }
 
-/* Status Colors (applied to the back face) */
-.correct .cellBack {
+/* ===== Status Colors (Back Face) ===== */
+.correct .cellBack,
+.correct.cellBack {
   background-color: var(--color-correct);
-  border: 2px solid var(--color-correct);
+  border-color: var(--color-correct);
   box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
 }
 
-.present .cellBack {
+.present .cellBack,
+.present.cellBack {
   background-color: var(--color-present);
-  border: 2px solid var(--color-present);
+  border-color: var(--color-present);
   box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
 }
 
-.absent .cellBack {
+.absent .cellBack,
+.absent.cellBack {
   background-color: var(--color-absent);
-  border: 2px solid var(--color-absent);
+  border-color: var(--color-absent);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
+/* ===== Responsive ===== */
 @media (max-width: 480px) {
   .cellWrapper {
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 3.25rem;
+    height: 3.25rem;
   }
   .cellFront, .cellBack {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
+  }
+  .rowNumber {
+    width: 1.5rem;
+    font-size: 0.9rem;
   }
 }

@@ -5,13 +5,17 @@ import type { CellData } from './types';
 interface LingoGridProps {
   grid: CellData[][];
   currentRow: number;
+  shakeRow?: number | null;
 }
 
-export const LingoGrid = ({ grid, currentRow }: LingoGridProps) => {
+export const LingoGrid = ({ grid, currentRow, shakeRow }: LingoGridProps) => {
   return (
     <div className={styles.gridContainer}>
       {grid.map((row, rowIndex) => (
-        <div key={`row-${rowIndex}`} className={styles.row}>
+        <div 
+          key={`row-${rowIndex}`} 
+          className={`${styles.row} ${rowIndex === shakeRow ? styles.shake : ''}`}
+        >
           <div className={styles.rowNumber}>{rowIndex + 1}</div>
           {row.map((cell, colIndex) => (
             <LingoCell 

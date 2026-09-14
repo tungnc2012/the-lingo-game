@@ -10,11 +10,13 @@ public class ClientGameRoom {
     private List<Team> teams;
     private String activeTeamId;
     private String activePlayerId;
-    private List<Character> revealedLetters;
+    private List<String> revealedLetters;
     private int currentAttempt;
     private int maxAttempts;
     private int wordLength;
     private long timeRemainingMs;
+    private boolean isStealAttempt;
+    private String violationReason;
 
     // Getters and Setters
     public String getRoomId() { return roomId; }
@@ -32,8 +34,8 @@ public class ClientGameRoom {
     public String getActivePlayerId() { return activePlayerId; }
     public void setActivePlayerId(String activePlayerId) { this.activePlayerId = activePlayerId; }
 
-    public List<Character> getRevealedLetters() { return revealedLetters; }
-    public void setRevealedLetters(List<Character> revealedLetters) { this.revealedLetters = revealedLetters; }
+    public List<String> getRevealedLetters() { return revealedLetters; }
+    public void setRevealedLetters(List<String> revealedLetters) { this.revealedLetters = revealedLetters; }
 
     public int getCurrentAttempt() { return currentAttempt; }
     public void setCurrentAttempt(int currentAttempt) { this.currentAttempt = currentAttempt; }
@@ -46,4 +48,10 @@ public class ClientGameRoom {
 
     public long getTimeRemainingMs() { return timeRemainingMs; }
     public void setTimeRemainingMs(long timeRemainingMs) { this.timeRemainingMs = timeRemainingMs; }
+
+    public boolean isStealAttempt() { return isStealAttempt; }
+    public void setStealAttempt(boolean stealAttempt) { this.isStealAttempt = stealAttempt; }
+
+    public String getViolationReason() { return violationReason; }
+    public void setViolationReason(String violationReason) { this.violationReason = violationReason; }
 }

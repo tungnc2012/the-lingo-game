@@ -25,8 +25,28 @@ export const LandingScreen = () => {
     }
   };
 
+  // Preview grid data with staggered animations
+  const previewRows = [
+    { letters: ['S', 'O', 'U', 'N', 'D'], statuses: ['correct', 'present', 'present', 'typed', 'typed'] },
+    { letters: ['C', 'O', 'L', 'O', 'R'], statuses: ['typed', 'typed', 'typed', 'typed', 'typed'] },
+    { letters: ['P', 'L', 'A', 'Y', 'E'], statuses: ['typed', 'typed', 'typed', 'typed', 'typed'] },
+    { letters: ['L', 'I', 'N', 'G', 'O'], statuses: ['correct', 'correct', 'correct', 'correct', 'correct'] },
+    { letters: ['', '', '', '', ''], statuses: ['empty', 'empty', 'empty', 'empty', 'empty'] },
+  ];
+
   return (
     <div className={styles.landingScreen}>
+      {/* Floating background particles */}
+      <div className={styles.particles}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className={styles.particle} style={{
+            '--delay': `${i * 0.8}s`,
+            '--x': `${15 + i * 14}%`,
+            '--size': `${4 + (i % 3) * 3}px`,
+          } as React.CSSProperties} />
+        ))}
+      </div>
+
       <div className={styles.container}>
         <div className={styles.leftPanel}>
           <div className={styles.logo}>
@@ -51,13 +71,13 @@ export const LandingScreen = () => {
                   className={styles.btnAction} 
                   onClick={handleCreateGame}
                 >
-                  Create Game
+                  <span className={styles.btnIcon}>🎮</span> Create Game
                 </button>
                 <button 
                   className={styles.btnAction} 
                   onClick={() => setIsJoining(true)}
                 >
-                  Join Game
+                  <span className={styles.btnIcon}>🔗</span> Join Game
                 </button>
               </>
             ) : (
@@ -82,7 +102,7 @@ export const LandingScreen = () => {
                   className={styles.btnAction}
                   onClick={() => setIsJoining(false)}
                 >
-                  Back
+                  ← Back
                 </button>
               </form>
             )}
@@ -91,42 +111,23 @@ export const LandingScreen = () => {
         
         <div className={styles.rightPanel}>
           <div className={styles.previewGrid}>
-            <div className={styles.previewRow}>
-              <div className={`${styles.previewCell} ${styles.correct}`}>S</div>
-              <div className={`${styles.previewCell} ${styles.present}`}>O</div>
-              <div className={`${styles.previewCell} ${styles.present}`}>U</div>
-              <div className={`${styles.previewCell} ${styles.typed}`}>N</div>
-              <div className={`${styles.previewCell} ${styles.typed}`}>D</div>
-            </div>
-            <div className={styles.previewRow}>
-              <div className={`${styles.previewCell} ${styles.typed}`}>C</div>
-              <div className={`${styles.previewCell} ${styles.typed}`}>O</div>
-              <div className={`${styles.previewCell} ${styles.typed}`}>L</div>
-              <div className={`${styles.previewCell} ${styles.typed}`}>O</div>
-              <div className={`${styles.previewCell} ${styles.typed}`}>R</div>
-            </div>
-            <div className={styles.previewRow}>
-              <div className={`${styles.previewCell} ${styles.typed}`}>P</div>
-              <div className={`${styles.previewCell} ${styles.typed}`}>L</div>
-              <div className={`${styles.previewCell} ${styles.typed}`}>A</div>
-              <div className={`${styles.previewCell} ${styles.typed}`}>Y</div>
-              <div className={`${styles.previewCell} ${styles.typed}`}>E</div>
-            </div>
-            <div className={styles.previewRow}>
-              <div className={`${styles.previewCell} ${styles.correct}`}>L</div>
-              <div className={`${styles.previewCell} ${styles.correct}`}>I</div>
-              <div className={`${styles.previewCell} ${styles.correct}`}>N</div>
-              <div className={`${styles.previewCell} ${styles.correct}`}>G</div>
-              <div className={`${styles.previewCell} ${styles.correct}`}>O</div>
-            </div>
-            <div className={styles.previewRow}>
-              <div className={styles.previewCell}></div>
-              <div className={styles.previewCell}></div>
-              <div className={styles.previewCell}></div>
-              <div className={styles.previewCell}></div>
-              <div className={styles.previewCell}></div>
-            </div>
+            {previewRows.map((row, rowIdx) => (
+              <div key={rowIdx} className={styles.previewRow}>
+                {row.letters.map((letter, colIdx) => (
+                  <div 
+                    key={colIdx} 
+                    className={`${styles.previewCell} ${styles[row.statuses[colIdx]]}`}
+                    style={{
+                      animationDelay: `${(rowIdx * 5 + colIdx) * 80}ms`
+                    }}
+                  >
+                    {letter}
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
+          <p className={styles.tagline}>Guess the word. Beat the clock. Win the game.</p>
         </div>
       </div>
     </div>

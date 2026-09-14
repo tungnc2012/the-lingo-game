@@ -52,8 +52,8 @@ public class GameController {
             
             GameRoom room = gameService.getRoom(request.getRoomId());
             if (room != null) {
-                // Broadcast the updated room state (attempt increased)
-                ClientGameRoom clientRoom = gameService.mapToClientRoom(room);
+                // Broadcast the updated room state (includes updated scores, active team, steal state)
+                ClientGameRoom clientRoom = gameService.mapToClientRoom(room, result.getViolationReason());
                 messagingTemplate.convertAndSend("/topic/room/" + room.getRoomId(), clientRoom);
             }
         }
@@ -63,6 +63,10 @@ public class GameController {
     public void nextTurn(@Payload JoinRoomRequest request) {
         GameRoom room = gameService.getRoom(request.getRoomId());
         if (room != null) {
+            // Alternate active team for the next word
+            String nextTeam = room.getOpposingTeamId();
+            room.setActiveTeamId(nextTeam);
+            
             gameService.startNewTurn(room, 5);
             ClientGameRoom clientRoom = gameService.mapToClientRoom(room);
             messagingTemplate.convertAndSend("/topic/room/" + room.getRoomId(), clientRoom);
