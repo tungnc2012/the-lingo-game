@@ -2,21 +2,26 @@
 
 To perfectly replicate the real British "Lingo" TV show, we need to implement the following core mechanics in our backend game engine.
 
+## Game Modes
+The game can be played in two modes:
+- **Single Player**: Play a single game of Lingo, trying to answer all the quizzes and beat the high score.
+- **Multi Player**: Play multiple games of Lingo with real people, the winner is the one with the highest score.
+
 ## 1. Game Rounds
 The game consists of multiple rounds that scale in difficulty:
-- **Round 1**: 4-letter words. Teams take turns playing their own boards.
-- **Round 2**: 5-letter words. Teams take turns playing their own boards.
+- **Round 1**: 4-letter words. Each team has 5 words to guess, each word has 5 attempt. The score will be decent after each attempt.
+- **Round 2**: 5-letter words. Each team has 5 words to guess, each word has 5 attempt. The score will be decent after each attempt.
 - **Quickfire Round**: A buzzer-based round where both teams compete to guess the same word (often starting as a 6-letter word, with letters revealed one by one).
 
 ## 2. Turn Mechanics & Time Limit
 - Each team has a maximum of **5 attempts** to guess the mystery word.
 - The **first letter** is always revealed at the start of the turn.
-- The team has exactly **20 seconds** to submit a guess for *each* attempt.
-- If the 20-second timer expires before a valid word is submitted, the team loses that attempt and incurs a **Violation**.
+- The team has exactly **25 seconds** to submit a guess for *each* attempt.
+- If the 25-second timer expires before a valid word is submitted, the team loses that attempt and incurs a **Violation**.
 
 ## 3. Violations & Steals
 A team's turn ends immediately, and control passes to the opponent (a "Steal") if:
-1. They run out of time (20 seconds expire).
+1. They run out of time (25 seconds expire).
 2. They submit a word that is not in the dictionary (invalid word).
 3. They exhaust all 5 attempts without guessing the word.
 
