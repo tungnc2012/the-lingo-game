@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header/Header';
 import { LingoGrid } from '../components/Grid/LingoGrid';
 import { Keyboard } from '../components/Keyboard/Keyboard';
@@ -23,6 +23,7 @@ const VIOLATION_MESSAGES: Record<string, string> = {
 
 export const GameScreen = () => {
   const { roomId } = useParams<{ roomId: string }>();
+  const navigate = useNavigate();
 
   const [grid, setGrid] = useState<CellData[][]>(generateEmptyGrid(MAX_ATTEMPTS, WORD_LENGTH));
   const [currentRow, setCurrentRow] = useState(0);
@@ -397,7 +398,13 @@ export const GameScreen = () => {
   return (
     <div className={styles.gameScreen}>
       <div className={styles.topSection}>
-        <div className={styles.logo}>The Lingo Game</div>
+        <div className={styles.topBar}>
+          <button className={styles.btnHome} onClick={() => navigate('/')}>
+            🏠
+          </button>
+          <div className={styles.logo}>The Lingo Game</div>
+          <div className={styles.topBarSpacer}></div>
+        </div>
         <div className={styles.headerWrapper}>
           <Header
             round={roundLabel}

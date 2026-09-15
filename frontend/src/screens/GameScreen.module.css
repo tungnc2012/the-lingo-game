@@ -18,6 +18,36 @@
   margin-bottom: 0.5rem;
 }
 
+.topBar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btnHome {
+  padding: 0.5rem 0.75rem;
+  font-size: 1.25rem;
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnHome:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.topBarSpacer {
+  width: 3rem; /* match approx width of home button */
+}
+
 .logo {
   font-size: 2rem;
   font-weight: 800;

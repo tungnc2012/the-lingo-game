@@ -49,6 +49,26 @@
   }
 }
 
+@keyframes popIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes cellReveal {
+  from { transform: scale(0.8) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* ===== Container ===== */
 .container {
   display: flex;
@@ -79,7 +99,7 @@
 /* ===== Right Panel ===== */
 .rightPanel {
   flex: 1;
-  padding: 4rem;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
