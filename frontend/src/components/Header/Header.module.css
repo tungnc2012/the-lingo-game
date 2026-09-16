@@ -46,6 +46,11 @@
   animation: glowPulse 2s ease-in-out infinite;
 }
 
+.singlePlayerCard {
+  width: 150px;
+  background: rgba(0, 0, 0, 0.4);
+}
+
 .team2.activeTeam {
   border-color: var(--team-2-color);
   background: rgba(59, 130, 246, 0.1);

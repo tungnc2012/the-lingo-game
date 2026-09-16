@@ -209,6 +209,34 @@
   margin-top: 1.5rem;
 }
 
+/* ===== High Score Form ===== */
+.highScoreForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  align-items: center;
+}
+
+.nameInput {
+  padding: 0.75rem 1.25rem;
+  font-size: 1.1rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+  color: white;
+  text-align: center;
+  font-family: 'Outfit', sans-serif;
+  width: 100%;
+  max-width: 250px;
+}
+
+.nameInput:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  background: rgba(0, 0, 0, 0.4);
+}
+
 /* ===== Primary Button ===== */
 .btnPrimary {
   padding: 0.85rem 2.5rem;

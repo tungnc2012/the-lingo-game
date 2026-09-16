@@ -10,6 +10,7 @@ public class GameRoom {
     private TurnContext turnContext;
     private String activeTeamId;
     private int wordsPlayedInRound;
+    private boolean isSinglePlayer;
 
     public GameRoom() {
         this.teams = new ArrayList<>();
@@ -21,6 +22,7 @@ public class GameRoom {
     public GameRoom(String roomId) {
         this();
         this.roomId = roomId;
+        this.isSinglePlayer = roomId != null && roomId.startsWith("single-");
     }
 
     public String getRoomId() { return roomId; }
@@ -40,6 +42,9 @@ public class GameRoom {
 
     public int getWordsPlayedInRound() { return wordsPlayedInRound; }
     public void setWordsPlayedInRound(int wordsPlayedInRound) { this.wordsPlayedInRound = wordsPlayedInRound; }
+
+    public boolean isSinglePlayer() { return isSinglePlayer; }
+    public void setSinglePlayer(boolean isSinglePlayer) { this.isSinglePlayer = isSinglePlayer; }
 
     /**
      * Get the opposing team's ID.

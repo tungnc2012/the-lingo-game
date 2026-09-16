@@ -15,14 +15,23 @@ import java.util.*;
 @Service
 public class DictionaryService {
 
+    private final Set<String> fourLetterWords = new HashSet<>();
+    private final List<String> fourLetterWordList = new ArrayList<>();
+    
     private final Set<String> fiveLetterWords = new HashSet<>();
     private final List<String> fiveLetterWordList = new ArrayList<>();
+    
+    private final Set<String> sixLetterWords = new HashSet<>();
+    private final List<String> sixLetterWordList = new ArrayList<>();
+    
     private final Random random = new Random();
 
     @PostConstruct
     public void init() {
+        loadWordFile("words_4.txt", fourLetterWords, fourLetterWordList);
         loadWordFile("words_5.txt", fiveLetterWords, fiveLetterWordList);
-        System.out.println("Dictionary loaded: " + fiveLetterWordList.size() + " five-letter words");
+        loadWordFile("words_6.txt", sixLetterWords, sixLetterWordList);
+        System.out.println("Dictionary loaded: " + fourLetterWordList.size() + " 4-letter, " + fiveLetterWordList.size() + " 5-letter, " + sixLetterWordList.size() + " 6-letter words");
     }
 
     private void loadWordFile(String filename, Set<String> wordSet, List<String> wordList) {
@@ -55,7 +64,11 @@ public class DictionaryService {
      */
     public boolean isValidWord(String word) {
         if (word == null || word.isBlank()) return false;
-        return fiveLetterWords.contains(word.toUpperCase().trim());
+        word = word.toUpperCase().trim();
+        if (word.length() == 4) return fourLetterWords.contains(word);
+        if (word.length() == 5) return fiveLetterWords.contains(word);
+        if (word.length() == 6) return sixLetterWords.contains(word);
+        return false;
     }
 
     /**
@@ -63,10 +76,16 @@ public class DictionaryService {
      * Currently only supports 5-letter words.
      */
     public String getRandomWord(int length) {
-        if (length == 5 && !fiveLetterWordList.isEmpty()) {
+        if (length == 4 && !fourLetterWordList.isEmpty()) {
+            return fourLetterWordList.get(random.nextInt(fourLetterWordList.size()));
+        } else if (length == 5 && !fiveLetterWordList.isEmpty()) {
             return fiveLetterWordList.get(random.nextInt(fiveLetterWordList.size()));
+        } else if (length == 6 && !sixLetterWordList.isEmpty()) {
+            return sixLetterWordList.get(random.nextInt(sixLetterWordList.size()));
         }
         // Fallback
+        if (length == 4) return "WORD";
+        if (length == 6) return "LINGOS";
         return "LINGO";
     }
 }

@@ -11,7 +11,6 @@ import styles from './GameScreen.module.css';
 
 const PLAYER_NAME = "DevUser";
 const MAX_ATTEMPTS = 5;
-const WORD_LENGTH = 5;
 const DEFAULT_TIME = 20;
 
 const VIOLATION_MESSAGES: Record<string, string> = {
@@ -25,15 +24,17 @@ export const GameScreen = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
 
-  const [grid, setGrid] = useState<CellData[][]>(generateEmptyGrid(MAX_ATTEMPTS, WORD_LENGTH));
+  const [grid, setGrid] = useState<CellData[][]>(generateEmptyGrid(MAX_ATTEMPTS, 5));
   const [currentRow, setCurrentRow] = useState(0);
-  const [gameState, setGameState] = useState<'CONNECTING' | 'PLAYING' | 'WON' | 'LOST'>('CONNECTING');
+  const [gameState, setGameState] = useState<'CONNECTING' | 'PLAYING' | 'WON' | 'LOST' | 'GAME_OVER'>('CONNECTING');
   const [timeLeft, setTimeLeft] = useState(DEFAULT_TIME);
   const [letterStatuses, setLetterStatuses] = useState<{ [key: string]: LetterStatus }>({});
   const [roomData, setRoomData] = useState<ClientGameRoom | null>(null);
   const [targetWord, setTargetWord] = useState<string | null>(null);
   const [shakeRow, setShakeRow] = useState<number | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>('');
+  const [playerName, setPlayerName] = useState<string>('');
+  const [highScoreSaved, setHighScoreSaved] = useState(false);
 
   // Refs that survive renders without causing re-renders
   const lastSubmittedRowRef = useRef<number>(-1);
@@ -93,6 +94,18 @@ export const GameScreen = () => {
     []
   );
 
+  // Effect to notify round changes
+  const [prevRoundState, setPrevRoundState] = useState<string | null>(null);
+  useEffect(() => {
+    if (roomData && roomData.state !== prevRoundState) {
+      if (prevRoundState && prevRoundState !== 'WAITING_FOR_PLAYERS' && roomData.state.startsWith('ROUND_')) {
+        const roundName = roomData.state.replace('_', ' ');
+        showStatus(`🚀 Advancing to ${roundName}!`);
+      }
+      setPrevRoundState(roomData.state);
+    }
+  }, [roomData?.state, prevRoundState, showStatus]);
+
   useEffect(() => {
     if (!roomId) return;
 
@@ -103,6 +116,7 @@ export const GameScreen = () => {
 
         // Transition out of CONNECTING on first real game state
         setGameState((prev) => {
+          if (state.state === 'GAME_OVER') return 'GAME_OVER';
           if (prev === 'CONNECTING') return 'PLAYING';
           return prev;
         });
@@ -112,7 +126,7 @@ export const GameScreen = () => {
         // A steal also has currentAttempt > 1 now (fixed in backend), so this
         // condition should never fire mid-steal.
         if (state.currentAttempt === 1 && !state.stealAttempt) {
-          setGrid(generateEmptyGrid(MAX_ATTEMPTS, WORD_LENGTH));
+          setGrid(generateEmptyGrid(MAX_ATTEMPTS, state.wordLength ?? 5));
           setCurrentRow(0);
           currentRowRef.current = 0;
           setLetterStatuses({});
@@ -255,7 +269,8 @@ export const GameScreen = () => {
     setTimeout(() => {
       setGrid((prev) => {
         const updated = prev.map((r) => [...r]);
-        for (let i = 0; i < WORD_LENGTH; i++) {
+        const cols = updated[0].length;
+        for (let i = 0; i < cols; i++) {
           for (let r = 0; r <= row; r++) {
             if (updated[r][i].status === 'CORRECT') {
               if (updated[nextRow][i].status === 'EMPTY') {
@@ -390,10 +405,15 @@ export const GameScreen = () => {
   }, [onKeyPress]);
 
   const activeTeam = roomData?.activeTeamId ?? 'team-1';
-  const roundLabel =
+  let roundLabel =
     roomData?.state === 'WAITING_FOR_PLAYERS'
       ? 'WAITING'
       : roomData?.state?.replace(/_/g, ' ') ?? 'ROUND 1';
+
+  if (roomData?.singlePlayer && roomData?.state !== 'WAITING_FOR_PLAYERS' && roomData?.state !== 'GAME_OVER') {
+    const wordInRound = (Math.max(0, roomData.wordsPlayedInRound - 1) % 5) + 1;
+    roundLabel += ` - WORD ${wordInRound}/5`;
+  }
 
   return (
     <div className={styles.gameScreen}>
@@ -414,6 +434,7 @@ export const GameScreen = () => {
             maxTime={roomData?.stealAttempt ? 10 : DEFAULT_TIME}
             activeTeam={activeTeam}
             statusMessage={statusMessage}
+            isSinglePlayer={roomData?.singlePlayer}
           />
         </div>
       </div>
@@ -465,6 +486,52 @@ export const GameScreen = () => {
                 Next Word →
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {gameState === 'GAME_OVER' && (
+        <div className={styles.bannerOverlay}>
+          <div className={styles.banner}>
+            <div className={styles.bannerEmoji}>🏆</div>
+            <h2>Game Over!</h2>
+            <p className={styles.modalSub}>Final Score: {roomData?.teams?.[0]?.score ?? 0}</p>
+            {!highScoreSaved ? (
+              <div className={styles.highScoreForm}>
+                <input
+                  type="text"
+                  placeholder="Enter your name"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  className={styles.nameInput}
+                  maxLength={15}
+                />
+                <button
+                  className={styles.btnPrimary}
+                  disabled={!playerName.trim()}
+                  onClick={async () => {
+                    await fetch('/api/highscores', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        username: playerName.trim(),
+                        score: roomData?.teams?.[0]?.score ?? 0
+                      })
+                    });
+                    setHighScoreSaved(true);
+                  }}
+                >
+                  Save Score
+                </button>
+              </div>
+            ) : (
+              <div>
+                <p>Score Saved!</p>
+                <button className={styles.btnPrimary} onClick={() => navigate('/')}>
+                  Back to Home
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -13,6 +13,7 @@ export interface ClientGameRoom {
   timeRemainingMs?: number;
   stealAttempt?: boolean;
   violationReason?: string;
+  singlePlayer?: boolean;
 }
 
 export interface GuessResult {

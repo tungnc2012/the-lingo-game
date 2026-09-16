@@ -63,11 +63,18 @@ public class GameController {
     public void nextTurn(@Payload JoinRoomRequest request) {
         GameRoom room = gameService.getRoom(request.getRoomId());
         if (room != null) {
-            // Alternate active team for the next word
-            String nextTeam = room.getOpposingTeamId();
-            room.setActiveTeamId(nextTeam);
+            // Alternate active team for the next word only in multiplayer
+            if (!room.isSinglePlayer()) {
+                String nextTeam = room.getOpposingTeamId();
+                room.setActiveTeamId(nextTeam);
+            }
             
-            gameService.startNewTurn(room, 5);
+            if (room.isSinglePlayer() && room.getWordsPlayedInRound() >= 15) {
+                room.setState(com.lingo.game.model.GameState.GAME_OVER);
+                room.setTurnContext(null);
+            } else {
+                gameService.startNewTurn(room);
+            }
             ClientGameRoom clientRoom = gameService.mapToClientRoom(room);
             messagingTemplate.convertAndSend("/topic/room/" + room.getRoomId(), clientRoom);
         }

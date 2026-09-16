@@ -17,6 +17,8 @@ public class ClientGameRoom {
     private long timeRemainingMs;
     private boolean isStealAttempt;
     private String violationReason;
+    private boolean isSinglePlayer;
+    private int wordsPlayedInRound;
 
     // Getters and Setters
     public String getRoomId() { return roomId; }
@@ -54,4 +56,10 @@ public class ClientGameRoom {
 
     public String getViolationReason() { return violationReason; }
     public void setViolationReason(String violationReason) { this.violationReason = violationReason; }
+
+    public boolean isSinglePlayer() { return isSinglePlayer; }
+    public void setSinglePlayer(boolean isSinglePlayer) { this.isSinglePlayer = isSinglePlayer; }
+
+    public int getWordsPlayedInRound() { return wordsPlayedInRound; }
+    public void setWordsPlayedInRound(int wordsPlayedInRound) { this.wordsPlayedInRound = wordsPlayedInRound; }
 }

@@ -43,7 +43,9 @@ public class GameService {
         if (room == null) {
             room = new GameRoom(roomId);
             room.getTeams().add(new Team("team-1"));
-            room.getTeams().add(new Team("team-2"));
+            if (!room.isSinglePlayer()) {
+                room.getTeams().add(new Team("team-2"));
+            }
             rooms.put(roomId, room);
         }
 
@@ -60,14 +62,28 @@ public class GameService {
 
     private void checkAndStartGame(GameRoom room) {
         int totalPlayers = room.getTeams().stream().mapToInt(t -> t.getPlayers().size()).sum();
-        if (totalPlayers >= 1 && room.getState() == GameState.WAITING_FOR_PLAYERS) {
+        int requiredPlayers = room.isSinglePlayer() ? 1 : 2; // For single player, only 1 is needed to start. Actually, wait. It already checked >= 1, but for multiplayer it should be >= 2? Wait, the original code had >= 1. Let's keep it >= 1 but make it explicitly clear.
+        if (totalPlayers >= requiredPlayers && room.getState() == GameState.WAITING_FOR_PLAYERS) {
             room.setState(GameState.ROUND_1);
             room.setActiveTeamId("team-1");
-            startNewTurn(room, 5);
+            startNewTurn(room);
         }
     }
 
-    public void startNewTurn(GameRoom room, int wordLength) {
+    public void startNewTurn(GameRoom room) {
+        int wordsPlayed = room.getWordsPlayedInRound();
+        int wordLength = 5;
+        if (wordsPlayed < 5) {
+            wordLength = 4;
+            if (room.getState() != GameState.ROUND_1) room.setState(GameState.ROUND_1);
+        } else if (wordsPlayed < 10) {
+            wordLength = 5;
+            if (room.getState() != GameState.ROUND_2) room.setState(GameState.ROUND_2);
+        } else {
+            wordLength = 6;
+            if (room.getState() != GameState.ROUND_3) room.setState(GameState.ROUND_3);
+        }
+
         TurnContext context = new TurnContext();
         context.setMaxAttempts(MAX_GRID_ROWS);
         context.setCurrentAttempt(1);
@@ -123,7 +139,11 @@ public class GameService {
             return rejected;
         }
 
-        // --- Dictionary validation removed per user request to allow any 5-letter guess ---
+        // --- Dictionary validation ---
+        if (!dictionaryService.isValidWord(guess)) {
+            ctx.setCurrentAttempt(ctx.getCurrentAttempt() + 1);
+            return handleViolation(room, "INVALID_WORD");
+        }
 
         // --- Tile evaluation (§4) ---
         List<LetterStatus> evaluation = evaluateTiles(guess, target);
@@ -152,7 +172,7 @@ public class GameService {
             return new GuessResult(guess, evaluation, false, target);
         }
 
-        // All attempts exhausted → turn over (no steal, just reveal word)
+        // All attempts exhausted → turn over
         if (ctx.getCurrentAttempt() > ctx.getMaxAttempts()) {
             return new GuessResult(guess, evaluation, false, target);
         }
@@ -168,17 +188,31 @@ public class GameService {
         TurnContext ctx = room.getTurnContext();
         String target = ctx.getTargetWord().toUpperCase();
 
-        // If this violation happened on the last attempt, end the game/reveal word
-        if (ctx.getCurrentAttempt() > ctx.getMaxAttempts()) {
-            return new GuessResult("", createAbsentEvaluation(target.length()), false, target);
+        if (room.isSinglePlayer()) {
+            if (ctx.getCurrentAttempt() > ctx.getMaxAttempts()) {
+                return new GuessResult("", createAbsentEvaluation(target.length()), false, target);
+            }
+            ctx.setTurnStartTime(System.currentTimeMillis());
+            GuessResult result = new GuessResult("", createAbsentEvaluation(target.length()), false, null);
+            result.setViolationReason(reason);
+            return result;
         }
 
-        // Do not trigger a steal. Just consume the attempt, reset the timer, and let the user continue on the next row.
-        ctx.setTurnStartTime(System.currentTimeMillis());
-
-        GuessResult result = new GuessResult("", createAbsentEvaluation(target.length()), false, null);
-        result.setViolationReason(reason);
-        return result;
+        // Multiplayer: Trigger a Steal if not already a steal attempt
+        if (!ctx.isStealAttempt()) {
+            ctx.setStealAttempt(true);
+            ctx.setStealingTeamId(room.getOpposingTeamId());
+            ctx.setTurnStartTime(System.currentTimeMillis());
+            ctx.setTimeLimitMs(STEAL_TIME_LIMIT_MS);
+            revealAdditionalLetter(ctx, target);
+            
+            GuessResult result = new GuessResult("", createAbsentEvaluation(target.length()), false, null);
+            result.setViolationReason(reason);
+            return result;
+        } else {
+            // Failed during a steal attempt
+            return new GuessResult("", createAbsentEvaluation(target.length()), false, target);
+        }
     }
 
     /**
@@ -262,6 +296,8 @@ public class GameService {
         clientRoom.setState(room.getState());
         clientRoom.setTeams(room.getTeams());
         clientRoom.setActiveTeamId(room.getActiveTeamId());
+        clientRoom.setSinglePlayer(room.isSinglePlayer());
+        clientRoom.setWordsPlayedInRound(room.getWordsPlayedInRound());
 
         if (room.getTurnContext() != null) {
             TurnContext ctx = room.getTurnContext();
